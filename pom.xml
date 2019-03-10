@@ -26,11 +26,6 @@
             <version>1.0.11</version>
             <type>pom</type>
         </dependency>
-        <dependency>
-            <groupId>org.fitnesse</groupId>
-            <artifactId>fitnesse</artifactId>
-            <version>20161106</version>
-        </dependency>
     </dependencies>
 
     <build>
