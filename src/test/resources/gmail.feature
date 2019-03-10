@@ -1,3 +1,6 @@
+##Student Name: Mahad Khan
+##Student ID: 260678570
+
 Feature: Gmail
 
   Scenario: Sending an email after uploading an image file saved on my device
