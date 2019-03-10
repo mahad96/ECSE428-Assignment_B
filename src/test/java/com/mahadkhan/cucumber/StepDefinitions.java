@@ -48,12 +48,14 @@ public class StepDefinitions {
     private final String URL_INPUT_CLASS = "Mf-Tl-Qc";
     private final String INSERT_BTN = "picker:ap:2";
     private final String REMOVE_BTN = ":j6";
+    private final String DRIVE_CLASS = "Kj-JD-K7-K0";
     //Images
-    private final String IMAGE_1 = System.getProperty("user.dir") + "/images/hashtag_5.jpg";
-    private final String IMAGE_2 = System.getProperty("user.dir") + "/images/hashtag_27.jpg";
-    private final String IMAGE_3 = System.getProperty("user.dir") + "/images/hashtag_107.png";
-    private final String IMAGE_4 = System.getProperty("user.dir") + "/images/hashtag_27.jpg";
-    private final String IMAGE_5 = System.getProperty("user.dir") + "/images/hashtag_107.png";
+    private final String IMAGE_1 = System.getProperty("user.dir") + "/images/image1.jpg";
+    private final String IMAGE_2 = System.getProperty("user.dir") + "/images/image2.jpg";
+    private final String IMAGE_3 = System.getProperty("user.dir") + "/images/image3.png";
+    private final String IMAGE_4 = System.getProperty("user.dir") + "/images/image4.png";
+    private final String IMAGE_5 = System.getProperty("user.dir") + "/images/image5.png";
+    private final String OVER_25 = System.getProperty("user.dir") + "/images/over25.jpg";
     private final String[] imageArray = {IMAGE_1, IMAGE_2, IMAGE_3, IMAGE_4, IMAGE_5};
     //Image URLs for Alternate Flow
     private final String IMAGE_1_URL = "https://geology.com/google-earth/google-earth.jpg";
@@ -121,6 +123,13 @@ public class StepDefinitions {
         attachFromDevice();
     }
 
+    @And("^I can send the email with the link to the image on Google Drive$")
+    public void sendEmailWithDriveLink() {
+        System.out.println("Attempting to send email with drive link");
+        sendEmailWithImage();
+    }
+
+
     // When
 
     // This method attaches a random image from the images provided in the images folder.
@@ -176,6 +185,37 @@ public class StepDefinitions {
         }
     }
 
+    // This mehtod attaches an image greater than 25MB
+    @When("^I attach an image file of over 25MB from my device$")
+    public void attachOver25(){
+            System.out.println("Attempting to attach image larger than 25MB from device");
+            driver.findElement(By.xpath(ATTACHMENT_BTN)).sendKeys(OVER_25);
+            System.out.println("Uploading image");
+    }
+
+    @When("^I attach an image from my device via Import Photos$")
+    public void attachViaImportPhoto() {
+        System.out.println("Attempting to upload image via URL");
+        WebElement insertPhoto = (new WebDriverWait(driver, 5))
+                .until(ExpectedConditions.presenceOfElementLocated(By.id(INSERT_PHOTO)));
+        insertPhoto.click();
+        WebElement uploadPhoto = (new WebDriverWait(driver, 25))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("a-Cf")));
+        uploadPhoto.click();
+        WebElement selectFile = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("a-b-c d-u d-u-F")));
+        selectFile.sendKeys(returnRandom(imageArray));
+        // Uploading popup
+        WebElement uploadPopup = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("Mf-Gq-Wo")));
+        // Confirm the image has been uploaded
+        try {
+            while(uploadPopup.getText().contains("Uploading"));
+        } catch (Exception e) {
+            System.out.println("Image successfully attached");
+        }
+    }
+
     // Then
 
     // This method sends the email and asserts true if email is sent successfully
@@ -212,6 +252,24 @@ public class StepDefinitions {
         }
         System.out.println("Sending email without attachment!");
         sendEmailWithImage();
+    }
+
+    // This method verifies the Google Drive popup appears indicating that the image is being uploaded to thr Drive
+    @Then("^it is uploaded on Google Drive$")
+    public void uploadedOnGoodleDrive(){
+        WebElement drivePopup = (new WebDriverWait(driver, 20))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(DRIVE_CLASS)));
+        // Confirm the file is being uploaded
+        if (!drivePopup.getText().contains("Attaching")) {
+            Assert.fail("The image was not able to upload");
+        }
+        // Wait for the file to be uploaded
+        try {
+            while(drivePopup.getText().contains("Attaching File"));
+        }
+        catch (Exception e){
+            System.out.println("Large image successfully uploaded");
+        }
     }
 
 
