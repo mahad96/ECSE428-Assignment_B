@@ -13,11 +13,11 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.interactions.Actions;
 import cucumber.annotation.en.And;
 import cucumber.annotation.en.Given;
 import cucumber.annotation.en.Then;
 import cucumber.annotation.en.When;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.junit.Assert;
 import java.util.Random;
 import java.net.MalformedURLException;
@@ -28,8 +28,7 @@ public class StepDefinitions {
 
     // Variables
     private WebDriver driver;
-    private final String PATH_TO_CHROME_DRIVER = "/Users/humayunkhan/Downloads/chromedriver";
-    private final String PATH_TO_BINARY = "/Applications/Browsers/Google Chrome.app";
+    private final String PATH_TO_CHROME_DRIVER = "/Users/mahadkhan/Downloads/chromedriver";
     //Authentication
     private final String SIGN_IN_URL = "https://accounts.google.com/signin/v2/identifier?service=mail&passive=true&rm=false&continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&ss=1&scc=1&ltmpl=default&ltmplcache=2&emr=1&osid=1&flowName=GlifWebSignIn&flowEntry=ServiceLogin";
     private final String SIGN_IN_EMAIL = "ecse428assnb@gmail.com";
@@ -38,34 +37,19 @@ public class StepDefinitions {
     //Element Identifiers
     private final String PWD_LANDING = "jXeDnc";
     private final String COMPOSE_BTN = "z0";
-    private final String RECIPIENT_ID = ":8s";
-    private final String RECIPIENT_CLASS = "v0";
     private final String SUBJECT_CLASS = "aoT";
     private final String ATTACHMENT_BTN = "//input[@type='file']";
     private final String UPLOADED_ATTACHMENT_CLASS = "vI";
     private final String SEND_BTN = "gU";
     private final String CONFIRMATION_POPUP_CLASS = "aT";
-    private final String INSERT_PHOTO = ":gw";
-    private final String URL_CLASS = "a-Cf a-Cf-V";
-    private final String URL_INPUT_CLASS = "Mf-Tl-Qc";
-    private final String INSERT_BTN = "picker:ap:2";
     private final String REMOVE_BTN = "vq";
-    private final String DRIVE_CLASS = "Kj-JD-K7-K0";
     //Images
     private final String IMAGE_1 = System.getProperty("user.dir") + "/images/image1.jpg";
     private final String IMAGE_2 = System.getProperty("user.dir") + "/images/image2.jpg";
     private final String IMAGE_3 = System.getProperty("user.dir") + "/images/image3.png";
     private final String IMAGE_4 = System.getProperty("user.dir") + "/images/image4.png";
     private final String IMAGE_5 = System.getProperty("user.dir") + "/images/image5.png";
-    private final String OVER_25 = System.getProperty("user.dir") + "/images/over25.jpg";
     private final String[] imageArray = {IMAGE_1, IMAGE_2, IMAGE_3, IMAGE_4, IMAGE_5};
-    //Image URLs for Alternate Flow
-    private final String IMAGE_1_URL = "https://geology.com/google-earth/google-earth.jpg";
-    private final String IMAGE_2_URL = "https://ssmu.ca/marketplace/wp-content/uploads/2016/09/190873.jpg";
-    private final String IMAGE_3_URL = "https://cdn-images-1.medium.com/max/1600/1*Dt2MPKnIO_gFBxdFsO-09Q.png";
-    private final String IMAGE_4_URL = "https://www.theglobeandmail.com/resources/assets/meta/facebook-1200x630.png";
-    private final String IMAGE_5_URL = "https://www.gettysburgflag.com/media/catalog/product/cache/2/thumbnail/520x416/602f0fa2c1f0d1ba5e241f914e856ff9/p/a/pakistanflag.png";
-    private final String[] imageURLArray = {IMAGE_1_URL, IMAGE_2_URL, IMAGE_3_URL, IMAGE_4_URL, IMAGE_5_URL};
     //Recipient email addresses
     private final String[] recipientEmails = {"ecse428test@mailinator.com", "ecse428test1@mailinator.com", "ecse428test2@mailinator.com", "ecse428test3@mailinator.com", "ecse428test4@mailinator.com"};
 
@@ -77,7 +61,6 @@ public class StepDefinitions {
     public void givenOnComposeEmail() throws Throwable {
         setupSeleniumWebDrivers();
         signIn();
-        System.out.println("System is in inital state: " + initialState());
         System.out.println("Attempting to find Compose button");
         WebElement composeBtn = (new WebDriverWait(driver, 10))
                 .until(ExpectedConditions.elementToBeClickable(By.className(COMPOSE_BTN)));
@@ -88,11 +71,19 @@ public class StepDefinitions {
             //Verifying if the composer is actually visible
             WebElement composer = (new WebDriverWait(driver, 10))
                     .until(ExpectedConditions.presenceOfElementLocated(By.id(":6g")));
-            //driver.findElement(By.id(":6d"));
             System.out.println("Email composer successfully opened");
         } catch (Exception e) {
             System.out.println("Did not successfully open email composer");
         }
+    }
+
+    // This method just signs the user in
+    @Given("^I am signed in$")
+    public void signedIn() throws Throwable {
+        setupSeleniumWebDrivers();
+        signIn();
+        System.out.println("Signed in.");
+
     }
 
     // And
@@ -110,6 +101,23 @@ public class StepDefinitions {
         subject.sendKeys("ECSE 428 Assignment B Automated Test");
     }
 
+    // This method selects an email in the inbox and attempts to right click and select reply
+    @And("^I have selected to reply to an email in my inbox$")
+    public void reply() {
+        System.out.println("Attempting to find the email I want to reply");
+        WebElement selectedEmail = (new WebDriverWait(driver, 5))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("zA")));
+        System.out.println("Found!");
+        // Actions class is required for right click
+        Actions actions = new Actions(driver);
+        System.out.println("Attempting to right click");
+        actions.contextClick(selectedEmail).perform();
+        WebElement replyBtn = (new WebDriverWait(driver, 5))
+                .until(ExpectedConditions.presenceOfElementLocated(By.id(":7j")));
+        replyBtn.click();
+        System.out.println("Reply Button Clicked");
+    }
+
     // This method is an additional check to verify if the image has been attached
     @And("^the image is successfully uploaded from device$")
     public void uploadedFromDevice() {
@@ -120,39 +128,79 @@ public class StepDefinitions {
         }
     }
 
+    // This method attempts to attach an image to the reply window that popped up
+    @And("^I attach an image file$")
+    public void attachToReply() {
+        try {
+            System.out.println("Attempting to attach image from device");
+            driver.findElement(By.xpath("//input[@type='file']")).sendKeys(returnRandom(imageArray));
+            System.out.println("Image successfully uploaded");
+        } catch (Exception e){
+            System.out.println("Image failed to upload");
+            // Fail if the image does not upload
+            Assert.fail("Image failed to upload");
+        }
+    }
+
+    // This method fills in the recipient field, clicks the cc button and then fills the cc field
+    // The subject can not yet be filled as it hides the cc button
+    @And("^I have filled in the Recipient and cc field$")
+    public void fillRecipientAndCC() {
+        System.out.println("Attempting to fill recipient field");
+        WebElement recipientTextInput = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("vO")));
+        recipientTextInput.sendKeys(returnRandom(recipientEmails));
+        System.out.println("Attempting to fill cc field");
+        WebElement ccBtn = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.id(":70")));
+        ccBtn.click();
+        WebElement ccInput = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.id(":a8")));
+        ccInput.sendKeys(returnRandom(recipientEmails));
+
+    }
+
+    // This method solely sets the recipient field and not the subject field
+    @And("^I have filled in the Recipient field$")
+    public void fillRecipient() {
+        System.out.println("Attempting to fill recipient field");
+        WebElement recipientTextInput = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("vO")));
+        recipientTextInput.sendKeys(returnRandom(recipientEmails));
+
+    }
+
+    // This method sets the subject field only
+    @And("^I have filled in the subject field")
+    public void fillSubject() {
+        WebElement subject = (new WebDriverWait(driver, 5))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(SUBJECT_CLASS)));
+        subject.sendKeys("ECSE 428 Assignment B Automated Test");
+
+    }
+
+    // This method attaches an image file that will later be removed
     @And("^I have attached an image file$")
     public void imageAlreadyAttached() {
         attachFromDevice();
     }
 
-    @And("^I can send the email with the link to the image on Google Drive$")
-    public void sendEmailWithDriveLink() {
-        System.out.println("Attempting to send email with drive link");
-        System.out.println("Attempting to find send button");
-        WebElement sendBtn = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.elementToBeClickable(By.className(SEND_BTN)));
-        sendBtn.click();
-        System.out.println("Send button clicked");
-        WebElement sendBTN = (new WebDriverWait(driver, 20))
-                .until(ExpectedConditions.elementToBeClickable(By.cssSelector("body > div:nth-child(1) > div > div > div > div.appsShareTeamdriveAclfixerAclFixerDialogContainer > div > div.appsShareTeamdriveDialogBottomButtons > div > div.appsShareTeamdriveAclfixerButtonContainer > div:nth-child(3) > div")));
-        try{
-            sendBTN.click();
-        } catch (Exception e){
-            System.out.println("Sending failed");
+    // This method accepts the popup warning that arises when the subject field is left empty
+    @And("^I accept the warning$")
+    public void acceptWarning() {
+        System.out.println("Accept popup warning");
+        // The following fixed time sleep is solely so that the action can be seen in the video.
+        // It is NOT used to control the system under test
+        try
+        {
+            Thread.sleep(1000);
         }
-        WebElement statusPopup = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className(CONFIRMATION_POPUP_CLASS)));
-        try {
-            while(statusPopup.getText().contains("Sending"));
-        } catch (Exception e){
-            statusPopup = (new WebDriverWait(driver, 10))
-                    .until(ExpectedConditions.presenceOfElementLocated(By.className(CONFIRMATION_POPUP_CLASS)));
+        catch(InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
         }
-        System.out.println("Email Sent!!!");
-        Assert.assertTrue(emailSentSuccessfully(statusPopup));
-        //Ensure system is returned to initial state
-        returnToInitialState();
-        driver.quit();
+        // Accept the popup warning
+        driver.switchTo().alert().accept();;
     }
 
 
@@ -171,32 +219,27 @@ public class StepDefinitions {
         }
     }
 
-    // This method uses image URL to add the image as attachment to the email body
-    @When("^I attach an image using its URL$")
-    public void attachViaURL() {
-        System.out.println("Attempting to upload image via URL");
-        WebElement insertPhoto = (new WebDriverWait(driver, 5))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id(":bf")));
-        insertPhoto.click();
-        /*WebElement webAddress = (new WebDriverWait(driver, 25))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id(":8")));
-        //webAddress.click();
-        webAddress.click();*/
-        driver.findElement((By.className("a-Cf a-Cf-w"))).click();
-        WebElement urlInput = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className(URL_INPUT_CLASS)));
-        urlInput.sendKeys(returnRandom(imageURLArray));
+    // This method attaches and attempts to send the email with an image attachment
+    // However as the subject is missing it will not be able to get sent
+    @When("^I attempt to send an image file from my device$")
+    public void sendImage() {
         //Attempt to upload image
         try {
-            System.out.println("Attempting to attach image via URL");
-            WebElement insertBtn = (new WebDriverWait(driver, 100))
-                    .until(ExpectedConditions.elementToBeClickable(By.id(INSERT_BTN)));
-            insertBtn.click();
+            System.out.println("Attempting to attach image from device");
+            driver.findElement(By.xpath(ATTACHMENT_BTN)).sendKeys(returnRandom(imageArray));
             System.out.println("Image successfully uploaded");
         } catch (Exception e){
             System.out.println("Image failed to upload");
         }
+        System.out.println("Attempting to find send button");
+        WebElement sendBtn = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.elementToBeClickable(By.className(SEND_BTN)));
+        sendBtn.click();
+        System.out.println("Send button clicked");
     }
+
+
+
 
     // This method removes the attached image for the error flow
     @When("^I press X next to the uploaded attachment$")
@@ -213,35 +256,7 @@ public class StepDefinitions {
         }
     }
 
-    // This mehtod attaches an image greater than 25MB
-    @When("^I attach an image file of over 25MB from my device$")
-    public void attachOver25(){
-            System.out.println("Attempting to attach image larger than 25MB from device");
-            driver.findElement(By.xpath(ATTACHMENT_BTN)).sendKeys(OVER_25);
-            System.out.println("Uploading image");
-    }
 
-    @When("^I attach an image from my device via Import Photos$")
-    public void attachViaImportPhoto() {
-        WebElement insertPhoto = (new WebDriverWait(driver, 5))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id(":bf")));
-        insertPhoto.click();
-        /*WebElement uploadPhoto = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className("a-Cf")));
-        uploadPhoto.click();*/
-        WebElement selectFile = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className("a-b-c d-u d-u-F d-u-G-H")));
-        selectFile.sendKeys(returnRandom(imageArray));
-        // Uploading popup
-        WebElement uploadPopup = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className("Mf-Gq-Wo")));
-        // Confirm the image has been uploaded
-        try {
-            while(uploadPopup.getText().contains("Uploading"));
-        } catch (Exception e) {
-            System.out.println("Image successfully attached");
-        }
-    }
 
     // Then
 
@@ -251,6 +266,47 @@ public class StepDefinitions {
         System.out.println("Attempting to find send button");
         WebElement sendBtn = (new WebDriverWait(driver, 10))
                 .until(ExpectedConditions.elementToBeClickable(By.className(SEND_BTN)));
+        sendBtn.click();
+        System.out.println("Send button clicked");
+        WebElement statusPopup = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(CONFIRMATION_POPUP_CLASS)));
+        try {
+            while(statusPopup.getText().contains("Sending"));
+        } catch (Exception e){
+            statusPopup = (new WebDriverWait(driver, 10))
+                    .until(ExpectedConditions.presenceOfElementLocated(By.className(CONFIRMATION_POPUP_CLASS)));
+        }
+        System.out.println("Email Sent!!!");
+        Assert.assertTrue(emailSentSuccessfully(statusPopup));
+        //Ensure system is returned to initial state
+        returnToInitialState();
+        driver.quit();
+    }
+
+    // This method confirms the email has been sent and returns the system to initial state
+    @Then("^the email will be sent$")
+    public void sendEmail(){
+        WebElement statusPopup = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(CONFIRMATION_POPUP_CLASS)));
+        try {
+            while(statusPopup.getText().contains("Sending"));
+        } catch (Exception e){
+            statusPopup = (new WebDriverWait(driver, 10))
+                    .until(ExpectedConditions.presenceOfElementLocated(By.className(CONFIRMATION_POPUP_CLASS)));
+        }
+        System.out.println("Email Sent!!!");
+        Assert.assertTrue(emailSentSuccessfully(statusPopup));
+        //Ensure system is returned to initial state
+        returnToInitialState();
+        driver.quit();
+    }
+
+    // This method send the reply email with the image attached and asserts true if the email is sent successfully
+    @Then("^I can send the reply with the image attached$")
+    public void sendReply(){
+        System.out.println("Attempting to find send button");
+        WebElement sendBtn = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.elementToBeClickable(By.id(":aj")));
         sendBtn.click();
         System.out.println("Send button clicked");
         WebElement statusPopup = (new WebDriverWait(driver, 10))
@@ -281,36 +337,11 @@ public class StepDefinitions {
         sendEmailWithImage();
     }
 
-    // This method verifies the Google Drive popup appears indicating that the image is being uploaded to thr Drive
-    @Then("^it is uploaded on Google Drive$")
-    public void uploadedOnGoodleDrive(){
-        WebElement drivePopup = (new WebDriverWait(driver, 20))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className(DRIVE_CLASS)));
-        // Confirm the file is being uploaded
-        if (!drivePopup.getText().contains("Attaching")) {
-            Assert.fail("The image was not able to upload");
-        }
-        // Wait for the file to be uploaded
-        try {
-            while(drivePopup.getText().contains("Attaching File"));
-        }
-        catch (Exception e){
-            System.out.println("Large image successfully uploaded");
-        }
-    }
 
 
 
     // Helper functions
     private void setupSeleniumWebDrivers() throws MalformedURLException {
-        /*if (driver == null) {
-            System.out.println("Setting up ChromeDriver... ");
-            ChromeOptions chromeOptions= new ChromeOptions();
-            chromeOptions.setBinary(PATH_TO_BINARY);
-            System.setProperty("webdriver.chrome.driver", PATH_TO_CHROME_DRIVER);
-            driver = new ChromeDriver(chromeOptions);
-            System.out.print("Done!\n");
-        }*/
         if (driver == null) {
             System.out.println("Setting up ChromeDriver... ");
             System.setProperty("webdriver.chrome.driver", PATH_TO_CHROME_DRIVER);
@@ -341,6 +372,7 @@ public class StepDefinitions {
                 .until(ExpectedConditions.elementToBeClickable(By.className("qhFLie")));
         nextBtn.click();
         System.out.println("Successfully logged in!");
+        System.out.println("System is in inital state: " + initialState());
     }
 
     // This method returns true if we return to initial state after sending an email
@@ -365,7 +397,7 @@ public class StepDefinitions {
     }
 
 
-    //This method navigates to the URL provided
+    // This method navigates to the URL provided
     private void goTo(String url) {
         if (driver != null) {
             System.out.println("Going to " + url);
@@ -373,7 +405,7 @@ public class StepDefinitions {
         }
     }
 
-    //This method returns a random String element from an array of Strings
+    // This method returns a random String element from an array of Strings
     private String returnRandom(String[] inputList){
         Random random = new Random();
         int index = random.nextInt(inputList.length);
