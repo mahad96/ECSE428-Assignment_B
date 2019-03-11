@@ -28,28 +28,28 @@ public class StepDefinitions {
 
     // Variables
     private WebDriver driver;
-    private final String PATH_TO_CHROME_DRIVER = "/Users/Mahad/Downloads/chromedriver";
+    private final String PATH_TO_CHROME_DRIVER = "/Users/humayunkhan/Downloads/chromedriver";
     private final String PATH_TO_BINARY = "/Applications/Browsers/Google Chrome.app";
     //Authentication
     private final String SIGN_IN_URL = "https://accounts.google.com/signin/v2/identifier?service=mail&passive=true&rm=false&continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&ss=1&scc=1&ltmpl=default&ltmplcache=2&emr=1&osid=1&flowName=GlifWebSignIn&flowEntry=ServiceLogin";
     private final String SIGN_IN_EMAIL = "ecse428assnb@gmail.com";
     private final String SIGN_IN_PWD = "260678570";
-    private final String LANDING_PAGE_URL = "https://mail.google.com/mail/u/0/#inbox";
+    private final String LANDING_PAGE_URL = "https://mail.google.com/mail/#inbox";
     //Element Identifiers
     private final String PWD_LANDING = "jXeDnc";
-    private final String COMPOSE_BTN = "T-I J-J5-Ji T-I-KE L3";
+    private final String COMPOSE_BTN = "z0";
     private final String RECIPIENT_ID = ":8s";
-    private final String RECIPIENT_CLASS = ":8s";
+    private final String RECIPIENT_CLASS = "v0";
     private final String SUBJECT_CLASS = "aoT";
     private final String ATTACHMENT_BTN = "//input[@type='file']";
     private final String UPLOADED_ATTACHMENT_CLASS = "vI";
-    private final String SEND_BTN = ":7u";
+    private final String SEND_BTN = "gU";
     private final String CONFIRMATION_POPUP_CLASS = "aT";
     private final String INSERT_PHOTO = ":gw";
     private final String URL_CLASS = "a-Cf a-Cf-V";
     private final String URL_INPUT_CLASS = "Mf-Tl-Qc";
     private final String INSERT_BTN = "picker:ap:2";
-    private final String REMOVE_BTN = ":j6";
+    private final String REMOVE_BTN = "vq";
     private final String DRIVE_CLASS = "Kj-JD-K7-K0";
     //Images
     private final String IMAGE_1 = System.getProperty("user.dir") + "/images/image1.jpg";
@@ -86,7 +86,9 @@ public class StepDefinitions {
         try {
             System.out.println("Attempting to open email composer");
             //Verifying if the composer is actually visible
-            driver.findElement(By.id(":6d"));
+            WebElement composer = (new WebDriverWait(driver, 10))
+                    .until(ExpectedConditions.presenceOfElementLocated(By.id(":6g")));
+            //driver.findElement(By.id(":6d"));
             System.out.println("Email composer successfully opened");
         } catch (Exception e) {
             System.out.println("Did not successfully open email composer");
@@ -99,11 +101,9 @@ public class StepDefinitions {
     // and accordingly fills in the recipient and subject fields
     @And("^I have filled in the Recipients and Subject fields$")
     public void fillFields() {
-        WebElement recipientInput = (new WebDriverWait(driver, 5))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id(RECIPIENT_ID)));
-        recipientInput.click();
-        WebElement recipientTextInput = (new WebDriverWait(driver, 5))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className(RECIPIENT_CLASS)));
+        System.out.println("Attempting to fill recipient and subject fields");
+        WebElement recipientTextInput = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("vO")));
         recipientTextInput.sendKeys(returnRandom(recipientEmails));
         WebElement subject = (new WebDriverWait(driver, 5))
                 .until(ExpectedConditions.presenceOfElementLocated(By.className(SUBJECT_CLASS)));
@@ -128,7 +128,31 @@ public class StepDefinitions {
     @And("^I can send the email with the link to the image on Google Drive$")
     public void sendEmailWithDriveLink() {
         System.out.println("Attempting to send email with drive link");
-        sendEmailWithImage();
+        System.out.println("Attempting to find send button");
+        WebElement sendBtn = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.elementToBeClickable(By.className(SEND_BTN)));
+        sendBtn.click();
+        System.out.println("Send button clicked");
+        WebElement sendBTN = (new WebDriverWait(driver, 20))
+                .until(ExpectedConditions.elementToBeClickable(By.cssSelector("body > div:nth-child(1) > div > div > div > div.appsShareTeamdriveAclfixerAclFixerDialogContainer > div > div.appsShareTeamdriveDialogBottomButtons > div > div.appsShareTeamdriveAclfixerButtonContainer > div:nth-child(3) > div")));
+        try{
+            sendBTN.click();
+        } catch (Exception e){
+            System.out.println("Sending failed");
+        }
+        WebElement statusPopup = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(CONFIRMATION_POPUP_CLASS)));
+        try {
+            while(statusPopup.getText().contains("Sending"));
+        } catch (Exception e){
+            statusPopup = (new WebDriverWait(driver, 10))
+                    .until(ExpectedConditions.presenceOfElementLocated(By.className(CONFIRMATION_POPUP_CLASS)));
+        }
+        System.out.println("Email Sent!!!");
+        Assert.assertTrue(emailSentSuccessfully(statusPopup));
+        //Ensure system is returned to initial state
+        returnToInitialState();
+        driver.quit();
     }
 
 
@@ -152,11 +176,13 @@ public class StepDefinitions {
     public void attachViaURL() {
         System.out.println("Attempting to upload image via URL");
         WebElement insertPhoto = (new WebDriverWait(driver, 5))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id(INSERT_PHOTO)));
+                .until(ExpectedConditions.presenceOfElementLocated(By.id(":bf")));
         insertPhoto.click();
-        WebElement webAddress = (new WebDriverWait(driver, 25))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className(URL_CLASS)));
-        webAddress.click();
+        /*WebElement webAddress = (new WebDriverWait(driver, 25))
+                .until(ExpectedConditions.presenceOfElementLocated(By.id(":8")));
+        //webAddress.click();
+        webAddress.click();*/
+        driver.findElement((By.className("a-Cf a-Cf-w"))).click();
         WebElement urlInput = (new WebDriverWait(driver, 10))
                 .until(ExpectedConditions.presenceOfElementLocated(By.className(URL_INPUT_CLASS)));
         urlInput.sendKeys(returnRandom(imageURLArray));
@@ -178,8 +204,8 @@ public class StepDefinitions {
         //Attempt to remove image
         try {
             System.out.println("Attempting to remove attached image");
-            WebElement removeBtn = (new WebDriverWait(driver, 20))
-                    .until(ExpectedConditions.elementToBeClickable(By.id(REMOVE_BTN)));
+            WebElement removeBtn = (new WebDriverWait(driver, 5))
+                    .until(ExpectedConditions.elementToBeClickable(By.className(REMOVE_BTN)));
             removeBtn.click();
             System.out.println("Image successfully removed");
         } catch (Exception e){
@@ -197,15 +223,14 @@ public class StepDefinitions {
 
     @When("^I attach an image from my device via Import Photos$")
     public void attachViaImportPhoto() {
-        System.out.println("Attempting to upload image via URL");
         WebElement insertPhoto = (new WebDriverWait(driver, 5))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id(INSERT_PHOTO)));
+                .until(ExpectedConditions.presenceOfElementLocated(By.id(":bf")));
         insertPhoto.click();
-        WebElement uploadPhoto = (new WebDriverWait(driver, 25))
+        /*WebElement uploadPhoto = (new WebDriverWait(driver, 10))
                 .until(ExpectedConditions.presenceOfElementLocated(By.className("a-Cf")));
-        uploadPhoto.click();
+        uploadPhoto.click();*/
         WebElement selectFile = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.className("a-b-c d-u d-u-F")));
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("a-b-c d-u d-u-F d-u-G-H")));
         selectFile.sendKeys(returnRandom(imageArray));
         // Uploading popup
         WebElement uploadPopup = (new WebDriverWait(driver, 10))
@@ -225,7 +250,7 @@ public class StepDefinitions {
     public void sendEmailWithImage(){
         System.out.println("Attempting to find send button");
         WebElement sendBtn = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.elementToBeClickable(By.id(SEND_BTN)));
+                .until(ExpectedConditions.elementToBeClickable(By.className(SEND_BTN)));
         sendBtn.click();
         System.out.println("Send button clicked");
         WebElement statusPopup = (new WebDriverWait(driver, 10))
@@ -300,16 +325,18 @@ public class StepDefinitions {
         System.out.println("Landed on Gmail's login page");
         WebElement emailInput = driver.findElement(By.name("identifier"));
         emailInput.sendKeys(SIGN_IN_EMAIL);
-        WebElement nextBtn = (new WebDriverWait(driver, 5))
-                .until(ExpectedConditions.elementToBeClickable(By.className("ZFr60d CeoRYc")));
+        WebElement nextBtn = (new WebDriverWait(driver, 20))
+                .until(ExpectedConditions.elementToBeClickable(By.className("qhFLie")));
         nextBtn.click();
-        WebElement passwordLanding = (new WebDriverWait(driver, 5))
+        WebElement passwordLanding = (new WebDriverWait(driver, 20))
                 .until(ExpectedConditions.presenceOfElementLocated(By.className(PWD_LANDING)));
         try {
-            while(!passwordLanding.getText().contains("Hi ECSE428"));
+            while(!(passwordLanding.getText().contains("Welcome")));
         } catch (Exception e) {
         }
-        driver.findElement(By.id("password")).sendKeys(SIGN_IN_PWD);
+        WebElement password = (new WebDriverWait(driver, 20))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className("whsOnd")));
+        password.sendKeys(SIGN_IN_PWD);
         nextBtn = (new WebDriverWait(driver, 5))
                 .until(ExpectedConditions.elementToBeClickable(By.className("qhFLie")));
         nextBtn.click();
